@@ -40,6 +40,8 @@ class MyAccessBDD extends AccessBDD {
                 return $this->selectAllRevues();
             case "exemplaire" :
                 return $this->selectExemplairesRevue($champs);
+            case "utilisateur" :
+                return $this->selectUtilisateur($champs);
             case "genre" :
             case "public" :
             case "rayon" :
@@ -276,5 +278,20 @@ class MyAccessBDD extends AccessBDD {
         $requete .= "order by e.dateAchat DESC";
         return $this->conn->queryBDD($requete, $champNecessaire);
     }		    
+    
+    /**
+     * récupère un utilisateur avec son service 
+     * @param array|null $champs
+     * @return array|null
+     */
+    private function selectUtilisateur(?array $champs) : ?array{
+        if(empty($champs)){
+            return null;
+        }
+        $requete = "select u.id, u.login, u.pwd, u.idService, s.libelle as libelleService ";
+        $requete .= "from utilisateur u join service s on u.idService=s.id ";
+        $requete .= "where u.login=:login and u.pwd=:pwd;";
+        return $this->conn->queryBDD($requete, $champs);
+    }
     
 }
