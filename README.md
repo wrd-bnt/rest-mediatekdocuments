@@ -25,7 +25,7 @@ Les tables ajoutées par rapport à la base d'origine sont : suivi, service, uti
 
 ## Documentation technique
 
-La documentation technique générée avec phpDocumentor est disponible dans le dossier doc/ du dépôt.
+La documentation technique générée avec phpDocumentor est disponible dans le dossier doc/doc-rest-mediatekdocuments/ du dépôt.
 
 ## Installation de l'API en local
 
