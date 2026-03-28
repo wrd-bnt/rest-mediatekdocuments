@@ -14,7 +14,8 @@ Cette méthode est appelée par l'application C# MediatekDocuments lors de l'aut
 
 ## L'API en ligne
 
-L'API est déployée sur AwardSpace et accessible via authentification Basic Auth.
+L'API est déployée sur AwardSpace à l'adresse http://mediatekdocs86.atwebpages.com/ 
+et accessible via Postman avec authentification Basic Auth. 
 Le mode opératoire pour l'utiliser est décrit dans le readme du dépôt d'origine.
 
 ## La base de données
@@ -25,7 +26,9 @@ Les tables ajoutées par rapport à la base d'origine sont : suivi, service, uti
 
 ## Documentation technique
 
-La documentation technique générée avec phpDocumentor est disponible dans le dossier doc/doc-rest-mediatekdocuments/ du dépôt.
+La documentation technique générée avec phpDocumentor est disponible :
+- Dans le dossier doc/doc-rest-mediatekdocuments/ du dépôt
+- En ligne : http://mediatekdocs86.atwebpages.com/doc-rest-mediatekdocuments/index.html
 
 ## Installation de l'API en local
 
