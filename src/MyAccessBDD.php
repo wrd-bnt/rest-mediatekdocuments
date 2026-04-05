@@ -42,6 +42,8 @@ class MyAccessBDD extends AccessBDD {
                 return $this->selectExemplairesRevue($champs);
             case "utilisateur" :
                 return $this->selectUtilisateur($champs);
+            case "commandedocument" :
+                return $this->selectCommandesDocument($champs);
             case "genre" :
             case "public" :
             case "rayon" :
@@ -100,8 +102,8 @@ class MyAccessBDD extends AccessBDD {
      */	
     protected function traitementDelete(string $table, ?array $champs) : ?int{
         switch($table){
-            case "" :
-                // return $this->uneFonction(parametres);
+            case "commande" :
+                return $this->deleteCommande($champs);
             default:                    
                 // cas général
                 return $this->deleteTuplesOneTable($table, $champs);	
@@ -294,4 +296,41 @@ class MyAccessBDD extends AccessBDD {
         return $this->conn->queryBDD($requete, $champs);
     }
     
+    /**
+     * récupère toutes les commandes d'un document (livre ou dvd) avec le libellé du suivi
+     * @param array|null $champs
+     * @return array|null
+     */
+    private function selectCommandesDocument(?array $champs) : ?array{
+        if(empty($champs)){
+            return null;
+        }
+        if(!array_key_exists('idLivreDvd', $champs)){
+            return null;
+        }
+        $champNecessaire['idLivreDvd'] = $champs['idLivreDvd'];
+        $requete = "select c.id, c.dateCommande, c.montant, cd.nbExemplaire, ";
+        $requete .= "cd.idLivreDvd, cd.idSuivi, s.libelle as suivi ";
+        $requete .= "from commande c join commandedocument cd on c.id=cd.id ";
+        $requete .= "join suivi s on s.id=cd.idSuivi ";
+        $requete .= "where cd.idLivreDvd=:idLivreDvd ";
+        $requete .= "order by c.dateCommande DESC;";
+        return $this->conn->queryBDD($requete, $champNecessaire);
+    }
+    
+        /**
+         * supprime une commande et son commandedocument associé via trigger
+         * @param array|null $champs
+         * @return int|null
+         */
+        private function deleteCommande(?array $champs) : ?int{
+            if(empty($champs)){
+                return null;
+            }
+            $id = $champs['id'];
+            $requete = "delete from commandedocument where id=:id;";
+            $this->conn->updateBDD($requete, ['id' => $id]);
+            $requete = "delete from commande where id=:id;";
+            return $this->conn->updateBDD($requete, ['id' => $id]);
+        }
 }
