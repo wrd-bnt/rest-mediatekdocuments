@@ -44,6 +44,10 @@ class MyAccessBDD extends AccessBDD {
                 return $this->selectUtilisateur($champs);
             case "commandedocument" :
                 return $this->selectCommandesDocument($champs);
+            case "abonnement" :
+                return $this->selectAbonnements($champs);
+            case "abonnementexpire" :
+                return $this->selectRevuesAbonnementsBientotExpires();
             case "genre" :
             case "public" :
             case "rayon" :
@@ -104,6 +108,8 @@ class MyAccessBDD extends AccessBDD {
         switch($table){
             case "commande" :
                 return $this->deleteCommande($champs);
+            case "abonnement" :
+                return $this->deleteAbonnement($champs);
             default:                    
                 // cas général
                 return $this->deleteTuplesOneTable($table, $champs);	
@@ -318,19 +324,67 @@ class MyAccessBDD extends AccessBDD {
         return $this->conn->queryBDD($requete, $champNecessaire);
     }
     
-        /**
-         * supprime une commande et son commandedocument associé via trigger
-         * @param array|null $champs
-         * @return int|null
-         */
-        private function deleteCommande(?array $champs) : ?int{
-            if(empty($champs)){
-                return null;
-            }
-            $id = $champs['id'];
-            $requete = "delete from commandedocument where id=:id;";
-            $this->conn->updateBDD($requete, ['id' => $id]);
-            $requete = "delete from commande where id=:id;";
-            return $this->conn->updateBDD($requete, ['id' => $id]);
+    /**
+     * supprime une commande et son commandedocument associé via trigger
+     * @param array|null $champs
+     * @return int|null
+     */
+    private function deleteCommande(?array $champs) : ?int{
+        if(empty($champs)){
+            return null;
         }
+        $id = $champs['id'];
+        $requete = "delete from commandedocument where id=:id;";
+        $this->conn->updateBDD($requete, ['id' => $id]);
+        $requete = "delete from commande where id=:id;";
+        return $this->conn->updateBDD($requete, ['id' => $id]);
+    }
+        
+    /**
+     * récupère toutes les commandes d'abonnement d'une revue
+     * @param array|null $champs
+     * @return array|null
+     */
+    private function selectAbonnements(?array $champs) : ?array{
+        if(empty($champs)){
+            return null;
+        }
+        if(!array_key_exists('idRevue', $champs)){
+            return null;
+        }
+        $champNecessaire['idRevue'] = $champs['idRevue'];
+        $requete = "select c.id, c.dateCommande, c.montant, a.dateFinAbonnement, a.idRevue ";
+        $requete .= "from commande c join abonnement a on c.id=a.id ";
+        $requete .= "where a.idRevue=:idRevue ";
+        $requete .= "order by c.dateCommande DESC;";
+        return $this->conn->queryBDD($requete, $champNecessaire);
+    }
+        
+    /**
+     * récupère les revues dont l'abonnement se termine dans moins de 30 jours
+     * @return array|null
+     */
+    private function selectRevuesAbonnementsBientotExpires() : ?array{
+        $requete = "select d.titre, a.dateFinAbonnement ";
+        $requete .= "from abonnement a join document d on a.idRevue=d.id ";
+        $requete .= "where a.dateFinAbonnement between curdate() and date_add(curdate(), interval 30 day) ";
+        $requete .= "order by a.dateFinAbonnement ASC;";
+        return $this->conn->queryBDD($requete);
+    }
+    
+    /**
+     * supprime un abonnement et la commande associée
+     * @param array|null $champs
+     * @return int|null
+     */
+    private function deleteAbonnement(?array $champs) : ?int{
+        if(empty($champs)){
+            return null;
+        }
+        $id = $champs['id'];
+        $requete = "delete from abonnement where id=:id;";
+        $this->conn->updateBDD($requete, ['id' => $id]);
+        $requete = "delete from commande where id=:id;";
+        return $this->conn->updateBDD($requete, ['id' => $id]);
+    }
 }
